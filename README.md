@@ -1,48 +1,81 @@
-# ServerlessAPI
-This project contains an API Gateway with minimum security requirements.
+Secure API Gateway with AWS SAM
 
-Introducción
+This project implements a secure API Gateway using AWS SAM (Serverless Application Model). The template is designed with minimal security requirements, making it suitable for production environments. It incorporates AWS best practices for secure and scalable architectures while allowing for further enhancements, such as the analysis of received objects (e.g., logs, data) for better visibility and monitoring.
+Features
 
-El presente SAM template ha sido diseñado para crear un endpoint seguro en API Gateway, optimizado para un entorno de producción. Se enfoca en cumplir con los requerimientos mínimos de seguridad necesarios para proteger los recursos del sistema, siguiendo las mejores prácticas de AWS. Además, se evalúan opciones futuras para mejorar el análisis y procesamiento de objetos recibidos a través del endpoint.
-1. Web Application Firewall (WAFv2)
+    API Gateway: Secure API Gateway endpoint with required API Key authentication.
+    AWS WAF (Web Application Firewall): Protects against common attacks like SQL Injection and Cross-Site Scripting (XSS) and includes rate-limiting to prevent Denial of Service (DoS) attacks.
+    Lambda Function: Processes incoming API requests, follows the principle of least privilege with a custom IAM Role, and includes structured logging for efficient analysis.
+    Usage Plans: Controls traffic to the API by limiting request rates and monitoring API consumption by clients.
+    Future Expansion: Considerations for enhanced data analysis using Amazon S3, Athena, and CloudWatch Dashboards.
 
-    WebACL: Se implementa un Web Application Firewall (WAF) regional para proteger el API de ataques comunes. Este WAF incluye las siguientes reglas:
-        RateLimitRule: Limita las solicitudes por IP, estableciendo un máximo de 1000 solicitudes en un período de 5 minutos, lo cual mitiga ataques básicos de Denegación de Servicio (DDoS).
-        Protección contra Inyección de SQL: Bloquea inyecciones SQL, un tipo común de ataque en APIs.
-        Protección XSS: Defiende contra ataques Cross-Site Scripting (XSS), que pueden comprometer la seguridad del sistema.
-        PermitSpecificEndpoints: Permite específicamente el endpoint /errortracking y bloquea otros caminos. Este patrón puede extenderse para incluir más endpoints según sea necesario.
+Architecture Overview
 
-Mejoras en Seguridad: Estas reglas proporcionan una capa adicional de protección ante vulnerabilidades comunes en aplicaciones web.
-2. API Gateway
+This SAM template sets up the following components:
 
-    Se ha implementado un API Gateway que requiere API Keys para acceder a los endpoints protegidos. Esta funcionalidad se configura a través del bloque Auth, asegurando que solo los usuarios autenticados con la clave correcta puedan interactuar con el API.
+    API Gateway: Manages HTTP requests and requires an API Key for access.
+    AWS WAFv2: Applies security rules, including rate-limiting and protection against common web application attacks.
+    AWS Lambda: Handles the logic for processing API requests.
+    CloudWatch Logs: Stores Lambda logs with a retention period of 90 days for structured analysis and long-term storage.
+    Amazon S3 & Athena (Future Considerations): Optionally store and query received objects (logs, data) for advanced analysis and cost efficiency.
 
-Mejor Práctica: El uso de API Keys permite gestionar el acceso de manera controlada, mejorando la seguridad y facilitando el monitoreo del uso.
-3. Lambda Function
+Installation
 
-    La función Lambda encargada de procesar las solicitudes del API sigue las mejores prácticas de seguridad y escalabilidad:
-        Rol IAM Personalizado: El rol IAM asociado a la Lambda tiene los permisos mínimos necesarios para operar, siguiendo el principio de mínimo privilegio. Tiene permisos para interactuar con CloudWatch Logs, pero el acceso a otros recursos está restringido.
-        Logging Estructurado: Los logs de la Lambda se almacenan en CloudWatch Logs con un período de retención de 90 días, optimizando tanto el análisis como el almacenamiento a largo plazo.
+To deploy this API Gateway with minimal security configurations, you can follow these steps:
+Prerequisites
 
-Mejoras en Seguridad y Gestión de Costos: El uso de roles IAM específicos y el control sobre la retención de logs garantizan una gestión eficiente de la seguridad y de los costos asociados.
-4. API Gateway y Planes de Uso
+    AWS CLI installed and configured with proper IAM permissions.
+    AWS SAM CLI installed (Installation guide).
+    A valid API Key for accessing the API once deployed.
 
-    Se ha configurado un Usage Plan en API Gateway con límites de solicitud (RateLimit: 50 y BurstLimit: 100) para controlar la cantidad de tráfico que llega al API y evitar sobrecargas.
-    Un API Key y un plan de uso han sido integrados para gestionar el acceso, permitiendo analizar el consumo del API por cada cliente.
+Deployment Steps
 
-Buenas Prácticas de Control de Tráfico: La implementación de planes de uso garantiza que API Gateway maneje eficientemente el tráfico entrante y permite un control granular sobre los clientes que acceden al API.
-5. Análisis de Objetos Recibidos (Consideraciones Futuras)
+    Clone the repository:
 
-Actualmente se está evaluando la opción de almacenar los objetos recibidos en Amazon S3 para luego consultarlos mediante Amazon Athena. Esto permitiría un análisis avanzado de los datos recibidos de manera rentable y eficiente.
+    bash
 
-Además, se está considerando el uso de CloudWatch Dashboards para crear un entorno de monitoreo en tiempo real y un análisis detallado de los datos recibidos. Esto facilitaría la detección temprana de posibles problemas y proporcionaría una mayor visibilidad sobre el comportamiento de las aplicaciones que interactúan con el API.
+git clone https://github.com/your-repo/secure-api-gateway.git
+cd secure-api-gateway
 
-Soluciones Evaluadas: Estas opciones se están considerando para mejorar las capacidades de análisis y procesamiento de datos sin aumentar significativamente el esfuerzo de desarrollo, manteniendo un alto nivel de seguridad y eficiencia en el almacenamiento de objetos.
+Build the project:
 
-5. Outputs
+bash
 
-    El template incluye salidas claras para la URL del API Gateway y la API Key necesarias para acceder al API, lo que simplifica la distribución y el uso del API en diferentes entornos.
+sam build
 
-Conclusiones
+Deploy the project:
 
-Este template sigue las mejores prácticas de AWS para garantizar una arquitectura serverless robusta, escalable y segura. Se incluyen medidas proactivas como el uso de WAF, autenticación mediante API Key, políticas de IAM restringidas y una gestión eficiente del tráfico a través de Usage Plans. Además, se está evaluando la integración de almacenamiento en S3 y análisis con Athena o CloudWatch Dashboards para mejorar el procesamiento y análisis de los objetos recibidos a través del API.
+bash
+
+    sam deploy --guided
+
+    Follow the prompts to configure the deployment. Ensure you specify a unique stack name and the AWS region where the resources will be deployed.
+
+    Outputs: Once deployed, the API Gateway URL and the required API Key will be displayed. Make sure to store the API Key securely as it will be needed to access the API.
+
+Usage
+
+After deploying the API, you can test the endpoint with an API client (e.g., Postman) by using the API Gateway URL and the API Key in the request headers.
+
+Example:
+
+bash
+
+curl -X GET https://your-api-id.execute-api.your-region.amazonaws.com/prod/your-endpoint \
+  -H "x-api-key: your-api-key"
+
+Security Features
+
+    AWS WAFv2: Rate limiting (1000 requests in 5 minutes per IP) and protection against SQL Injection and XSS attacks.
+    IAM Role: The Lambda function is assigned a custom IAM Role with the least privileges necessary to perform its tasks.
+    API Keys: Ensures that only authorized clients can access the API.
+
+Future Considerations
+
+We are exploring the option of storing received objects (such as logs or other data) in Amazon S3, to be queried later using Amazon Athena. This would enable advanced analysis while maintaining a cost-effective approach. Additionally, CloudWatch Dashboards may be used for real-time monitoring and detailed analysis of the objects processed by the API.
+License
+
+This project is licensed under the MIT License. See the LICENSE file for more details.
+Conclusion
+
+This SAM template provides a secure, scalable API Gateway with minimal security requirements for production environments. It follows AWS best practices and can be easily extended with more advanced features like enhanced data analysis and monitoring.
