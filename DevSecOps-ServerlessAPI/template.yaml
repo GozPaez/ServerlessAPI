@@ -1,0 +1,201 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SAM template to deploy a Lambda function with Secure API Gateway
+
+Parameters:
+  EnvironmentKey:
+    Type: String
+    Default: testing
+    AllowedValues:
+      - development
+      - testing
+      - dev
+      - staging
+      - production
+ 
+Resources:
+ 
+  WebACL:
+    Type: AWS::WAFv2::WebACL
+    DependsOn: SECApi
+    Properties:
+      Name: !Sub "SecWebACL-${EnvironmentKey}"
+      Scope: REGIONAL
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub "SecWAFMetrics-${EnvironmentKey}"
+      Rules:
+        - Name: RateLimitRule
+          Priority: 1
+          Action:
+            Block: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: "RateLimitRule"
+          Statement:
+            RateBasedStatement:
+              Limit: 1000
+              AggregateKeyType: IP
+        - Name: SQLInjectionProtection
+          Priority: 2
+          Action:
+            Block: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: "SQLInjectionProtection"
+          Statement:
+            SqliMatchStatement:
+              FieldToMatch:
+                UriPath: {}
+              TextTransformations:
+                - Priority: 0
+                  Type: URL_DECODE
+        - Name: XSSProtection
+          Priority: 3
+          Action:
+            Block: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: "XSSProtection"
+          Statement:
+            XssMatchStatement:
+              FieldToMatch:
+                UriPath: {}
+              TextTransformations:
+                - Priority: 0
+                  Type: HTML_ENTITY_DECODE
+        - Name: AllowSpecificEndpoints
+          Priority: 4
+          Statement:
+            RegexMatchStatement:
+              RegexString: "^/(errortracking)$"
+              FieldToMatch:
+                UriPath: {}
+              TextTransformations:
+                - Priority: 0
+                  Type: NONE
+          Action:
+            Allow: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: AllowSpecificEndpoints
+ 
+  WebACLAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    DependsOn: WebACL
+    Properties:
+      ResourceArn: !Join [ "", [ "arn:aws:apigateway:", !Ref "AWS::Region", "::", "/restapis/", !Ref SECApi, "/stages/", !Ref EnvironmentKey ] ]
+      WebACLArn: !GetAtt WebACL.Arn
+ 
+  SECApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "SecAPI-${EnvironmentKey}"
+      StageName: !Sub "${EnvironmentKey}"
+      Auth:
+        ApiKeyRequired: true
+ 
+  SECApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: SECApi
+    Properties:
+      RestApiId: !Ref SECApi
+      StageName: !Ref EnvironmentKey
+ 
+  SECApiLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join [ "", [ "SEC_POST_Sec_Role_", !Ref EnvironmentKey ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/SEC_POST_Sec-${EnvironmentKey}:*"
+ 
+  SECApiLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "SEC_POST_Sec-${EnvironmentKey}"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ./src
+      Environment:
+        Variables:
+          ENV: !Ref EnvironmentKey
+      Role: !GetAtt SECApiLambdaRole.Arn
+      Events:
+        SECApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref SECApi
+            Path: /errortracking
+            Method: post
+            Auth:
+              ApiKeyRequired: true
+ 
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/SEC_POST_Sec-${EnvironmentKey}"
+      RetentionInDays: 90
+     
+  SECApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    DependsOn: SECApiDeployment
+    Properties:
+      Name: !Sub "SecAPIKey-${EnvironmentKey}"
+      Enabled: true
+   
+  SECUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    DependsOn: SECApiDeployment
+    Properties:
+      UsagePlanName: !Sub "SecUsagePlan-${EnvironmentKey}"
+      ApiStages:
+        - ApiId: !Ref SECApi
+          Stage: !Ref EnvironmentKey
+      Throttle:
+        BurstLimit: 100 
+        RateLimit: 50 
+      Quota:
+        Limit: 10000
+        Period: MONTH
+ 
+  SECApiKeyUsagePlan:
+    Type: AWS::ApiGateway::UsagePlanKey
+    DependsOn: SECApi
+    Properties:
+      KeyId: !Ref SECApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref SECUsagePlan
+ 
+Outputs:
+  ApiUrl:
+    Description: "API Gateway URL"
+    Value: !Sub "https://${SECApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentKey}/errortracking"
+ 
+  ApiKeyValue:
+    Description: "API Key value"
+    Value: !Ref SECApiKey
