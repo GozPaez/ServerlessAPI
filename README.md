@@ -14,10 +14,10 @@ This project implements a secure API Gateway using AWS SAM (Serverless Applicati
 
 This SAM template sets up the following components:
 
-1. **API Gateway**: Manages HTTP requests and requires an API Key for access.
-2. **AWS WAFv2**: Applies security rules, including rate-limiting and protection against common web application attacks.
+1. **API Gateway**: Manages HTTP requests and requires an **API Key** for access.
+2. **AWS WAFv2**: Applies security rules, including **rate-limiting and protection** against common web application attacks.
 3. **AWS Lambda**: Handles the logic for processing API requests.
-4. **CloudWatch Logs**: Stores Lambda logs with a retention period of 90 days for structured analysis and long-term storage.
+4. **CloudWatch Logs**: Stores Lambda logs with a **retention period of 90 days** for structured analysis and long-term storage.
 5. **Amazon S3 & Athena (Future Considerations)**: Optionally store and query received objects (logs, data) for advanced analysis and cost efficiency.
 
 ## Installation
