@@ -15,6 +15,8 @@ env:
   TESTING_PIPELINE_EXECUTION_ROLE: arn:aws:iam::481257089856:role/aws-sam-cli-managed-qa-pipeli-PipelineExecutionRole-tD42DJkGmYhU
   TESTING_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::481257089856:role/aws-sam-cli-managed-qa-pi-CloudFormationExecutionRo-lxAv9qJBcdA0
   TESTING_ARTIFACTS_BUCKET: aws-sam-cli-managed-qa-pipeline-re-artifactsbucket-bp09yuvlb37q
+  EnvironmentKeyQA: dev
+  EnvironmentKeyProd: production
   # If there are functions with "Image" PackageType in your template,
   # uncomment the line below and add "--image-repository ${TESTING_IMAGE_REPOSITORY}" to
   # testing "sam package" and "sam deploy" commands.
@@ -184,11 +186,12 @@ jobs:
         run: |
           sam deploy --stack-name ${TESTING_STACK_NAME} \
             --template packaged-testing.yaml \
-            --capabilities CAPABILITY_IAM \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM\
             --region ${TESTING_REGION} \
             --s3-bucket ${TESTING_ARTIFACTS_BUCKET} \
             --no-fail-on-empty-changeset \
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE}
+            --parameter-overrides EnvirontmentKey=${EnvironmentKeyQA}
 
   integration-test:
     if: github.ref == 'refs/heads/main'
@@ -228,8 +231,9 @@ jobs:
         run: |
           sam deploy --stack-name ${PROD_STACK_NAME} \
             --template packaged-prod.yaml \
-            --capabilities CAPABILITY_IAM \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM\
             --region ${PROD_REGION} \
             --s3-bucket ${PROD_ARTIFACTS_BUCKET} \
             --no-fail-on-empty-changeset \
             --role-arn ${PROD_CLOUDFORMATION_EXECUTION_ROLE}
+            --parameter-overrides EnvirontmentKey=${EnvironmentKeyProd}
