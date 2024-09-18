@@ -103,12 +103,12 @@ Resources:
       Auth:
         ApiKeyRequired: true
  
-  SECApiDeployment:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn: SECApi
-    Properties:
-      RestApiId: !Ref SECApi
-      StageName: !Ref EnvironmentKey
+  #SECApiDeployment:
+  #  Type: AWS::ApiGateway::Deployment
+  #  DependsOn: SECApi
+  #  Properties:
+  #    RestApiId: !Ref SECApi
+  #    StageName: !Ref EnvironmentKey
  
   SECApiLambdaRole:
     Type: AWS::IAM::Role
