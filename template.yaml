@@ -88,12 +88,12 @@ Resources:
             CloudWatchMetricsEnabled: true
             MetricName: AllowSpecificEndpoints
  
-  WebACLAssociation:
-    Type: AWS::WAFv2::WebACLAssociation
-    DependsOn: WebACL
-    Properties:
-      ResourceArn: !Join [ "", [ "arn:aws:apigateway:", !Ref "AWS::Region", "::", "/restapis/", !Ref SECApi, "/stages/", !Ref EnvironmentKey ] ]
-      WebACLArn: !GetAtt WebACL.Arn
+  #WebACLAssociation:
+  #  Type: AWS::WAFv2::WebACLAssociation
+  #  DependsOn: WebACL
+  #  Properties:
+  #    ResourceArn: !Join [ "", [ "arn:aws:apigateway:", !Ref "AWS::Region", "::", "/restapis/", !Ref SECApi, "/stages/", !Ref EnvironmentKey ] ]
+  #    WebACLArn: !GetAtt WebACL.Arn
  
   SECApi:
     Type: AWS::Serverless::Api
