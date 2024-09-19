@@ -19,6 +19,8 @@ env:
   TESTING_PIPELINE_EXECUTION_ROLE: arn:aws:iam::481257089856:role/aws-sam-cli-managed-staging-p-PipelineExecutionRole-XTtUu9BXIk8B
   TESTING_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::481257089856:role/aws-sam-cli-managed-stagi-CloudFormationExecutionRo-0xOpypDpNdNx
   TESTING_ARTIFACTS_BUCKET: aws-sam-cli-managed-staging-pipeli-artifactsbucket-tzvsajonewhe
+  EnvironmentKeyQA: dev
+  EnvironmentKeyProd: production
   # If there are functions with "Image" PackageType in your template,
   # uncomment the line below and add "--image-repository ${TESTING_IMAGE_REPOSITORY}" to
   # testing "sam package" and "sam deploy" commands.
@@ -200,6 +202,7 @@ jobs:
             --s3-bucket ${TESTING_ARTIFACTS_BUCKET} \
             --no-fail-on-empty-changeset \
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE}
+            --parameter-overrides EnvironmentKey=${EnvironmentKeyQA}
 
   integration-test:
     if: github.ref == 'refs/heads/cicd'
@@ -246,3 +249,4 @@ jobs:
             --s3-bucket ${PROD_ARTIFACTS_BUCKET} \
             --no-fail-on-empty-changeset \
             --role-arn ${PROD_CLOUDFORMATION_EXECUTION_ROLE}
+            --parameter-overrides EnvironmentKey=${EnvironmentKeyProd}
