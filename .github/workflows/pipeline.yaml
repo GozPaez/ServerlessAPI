@@ -10,8 +10,10 @@ on:
       - 'feature**'
 
 env:
-  PIPELINE_USER_ACCESS_KEY_ID: ${{ secrets.AWS_ACCOUNT_GOZ_ACCESS_KEY }}
-  PIPELINE_USER_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCOUNT_GOZ_SECRET_KEY }}
+  PIPELINE_GOZ_ACCESS_KEY_ID: ${{ secrets.AWS_ACCOUNT_GOZ_ACCESS_KEY }}
+  PIPELINE_GOZ_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCOUNT_GOZ_SECRET_KEY }}
+  PIPELINE_TAVOPAEZ_ACCESS_KEY_ID: ${{ secrets.AWS_ACCOUNT_GOZ_ACCESS_KEY }}
+  PIPELINE_TAVOPAEZ_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCOUNT_GOZ_SECRET_KEY }}
   SAM_TEMPLATE: template.yaml
   TESTING_STACK_NAME: sam-app-staging
   TESTING_PIPELINE_EXECUTION_ROLE: arn:aws:iam::481257089856:role/aws-sam-cli-managed-staging-p-PipelineExecutionRole-XTtUu9BXIk8B
@@ -88,8 +90,8 @@ jobs:
       - name: Assume the testing pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          aws-access-key-id: ${{ env.PIPELINE_USER_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.PIPELINE_USER_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.PIPELINE_GOZ_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.PIPELINE_GOZ_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.TESTING_REGION }}
           role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
           role-session-name: feature-deployment
@@ -122,8 +124,8 @@ jobs:
       - name: Assume the testing pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          aws-access-key-id: ${{ env.PIPELINE_USER_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.PIPELINE_USER_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.PIPELINE_GOZ_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.PIPELINE_GOZ_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.TESTING_REGION }}
           role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
           role-session-name: testing-packaging
@@ -145,8 +147,8 @@ jobs:
       - name: Assume the prod pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          aws-access-key-id: ${{ env.PIPELINE_USER_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.PIPELINE_USER_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.PIPELINE_TAVOPAEZ_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.PIPELINE_TAVOPAEZ_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.PROD_REGION }}
           role-to-assume: ${{ env.PROD_PIPELINE_EXECUTION_ROLE }}
           role-session-name: prod-packaging
@@ -181,8 +183,8 @@ jobs:
       - name: Assume the testing pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          aws-access-key-id: ${{ env.PIPELINE_USER_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.PIPELINE_USER_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.PIPELINE_GOZ_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.PIPELINE_GOZ_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.TESTING_REGION }}
           role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
           role-session-name: testing-deployment
@@ -227,8 +229,8 @@ jobs:
       - name: Assume the prod pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          aws-access-key-id: ${{ env.PIPELINE_USER_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.PIPELINE_USER_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.PIPELINE_TAVOPAEZ_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.PIPELINE_TAVOPAEZ_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.PROD_REGION }}
           role-to-assume: ${{ env.PROD_PIPELINE_EXECUTION_ROLE }}
           role-session-name: prod-deployment
