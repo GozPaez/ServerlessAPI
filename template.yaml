@@ -110,29 +110,29 @@ Resources:
   #    RestApiId: !Ref SECApi
   #    StageName: !Ref EnvironmentKey
  
-  SECApiLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Join [ "", [ "SEC_POST_Sec_Role_", !Ref EnvironmentKey ] ]
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: LambdaBasicExecutionPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource:
-                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/SEC_POST_Sec-${EnvironmentKey}:*"
+  #SECApiLambdaRole:
+  #  Type: AWS::IAM::Role
+  #  Properties:
+  #    RoleName: !Join [ "", [ "SEC_POST_Sec_Role_", !Ref EnvironmentKey ] ]
+  #    AssumeRolePolicyDocument:
+  #      Version: "2012-10-17"
+  #      Statement:
+  #        - Effect: Allow
+  #          Principal:
+  #            Service: lambda.amazonaws.com
+  #          Action: sts:AssumeRole
+  #    Policies:
+  #      - PolicyName: LambdaBasicExecutionPolicy
+  #        PolicyDocument:
+  #          Version: "2012-10-17"
+  #          Statement:
+  #            - Effect: Allow
+  #              Action:
+  #                - logs:CreateLogGroup
+  #                - logs:CreateLogStream
+  #                - logs:PutLogEvents
+  #              Resource:
+  #                - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/SEC_POST_Sec-${EnvironmentKey}:*"
  
   SECApiLambda:
     Type: AWS::Serverless::Function
@@ -144,7 +144,7 @@ Resources:
       Environment:
         Variables:
           ENV: !Ref EnvironmentKey
-      Role: !GetAtt SECApiLambdaRole.Arn
+      #Role: !GetAtt SECApiLambdaRole.Arn
       Events:
         SECApiEvent:
           Type: Api
