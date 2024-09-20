@@ -137,7 +137,7 @@ Resources:
   SECApiLambda:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "SEC_POST_Sec-${EnvironmentKey}"
+      FunctionName: !Sub "SEC_POST_processing-${EnvironmentKey}"
       Handler: index.handler
       Runtime: nodejs18.x
       CodeUri: ./src
